@@ -1,0 +1,395 @@
+1-1
+
+USE studentsdb_dengqisheng
+SELECT * INTO stu_phone_dengqisheng FROM student_info_dengqisheng
+ALTER TABLE stu_phone_dengqisheng ADD 电话号码 char(7) NULL
+
+CREATE RULE phone_rule
+AS @phone LIKE '[0-9][0-9][0-9][0-9][0-9][0-9][0-9]'
+
+EXEC sp_bindrule phone_rule, 'stu_phone_dengqisheng.电话号码'
+
+1-2
+
+CREATE RULE stusex_rule
+AS @sex IN ('男', '女')
+
+EXEC sp_bindrule stusex_rule, 'stu_phone_dengqisheng.性别' 
+
+1-3
+
+EXEC sp_help stusex_rule
+EXEC sp_helptext stusex_rule
+EXEC sp_rename 'stusex_rule', 'stu_s_rule'
+
+1-4
+
+EXEC sp_unbindrule 'stu_phone_dengqisheng.性别'
+DROP RULE stu_s_rule
+
+1-5
+
+CREATE DEFAULT df_date AS '2012-12-21'
+GO
+CREATE DEFAULT df_char AS 'UNKNOWN'
+GO
+CREATE DEFAULT df_money AS $100
+GO
+
+USE studentsdb_dengqisheng
+CREATE TABLE stu_fee_dengqisheng
+( 
+  学号 char(10) NOT NULL,
+  姓名 char(8) NOT NULL,
+  学费 money,
+  交费日期 datetime,
+  电话号码 char(7)
+ )
+
+EXEC sp_bindefault df_date, 'stu_fee_dengqisheng.交费日期'
+EXEC sp_bindefault df_char, 'stu_fee_dengqisheng.电话号码'
+EXEC sp_bindefault df_money, 'stu_fee_dengqisheng.学费'
+
+USE studentsdb_dengqisheng
+INSERT INTO stu_fee_dengqisheng(学号, 姓名) VALUES('0001', '刘卫平')
+INSERT INTO stu_fee_dengqisheng(学号, 姓名, 学费) VALUES('0001', '张卫民', $120)
+INSERT INTO stu_fee_dengqisheng(学号, 姓名, 学费, 交费日期) VALUES('0001', '马东', $110, '2006-5-12')
+
+EXEC sp_unbindefault 'stu_fee_dengqisheng.交费日期'
+EXEC sp_unbindefault 'stu_fee_dengqisheng.电话号码'
+EXEC sp_unbindefault 'stu_fee_dengqisheng.学费'
+DROP DEFAULT df_date
+DROP DEFAULT df_char
+DROP DEFAULT df_money
+
+1-6
+
+USE studentsdb_dengqisheng
+ALTER TABLE student_info_dengqisheng ADD 院系 varchar(20) NULL
+GO
+CREATE DEFAULT stu_d_df AS '信息工程学院'
+GO
+EXEC sp_bindefault stu_d_df, 'student_info_dengqisheng.院系'
+GO
+INSERT INTO student_info_dengqisheng(学号, 姓名, 性别, 出生日期)
+VALUES('0020', '陈丰', '男', '1996-03-28')
+EXEC sp_unbindefault 'student_info_dengqisheng.院系'
+GO
+DROP DEFAULT stu_d_df
+GO
+
+1-7
+
+USE studentsdb_dengqisheng
+CREATE TABLE stu_con_dengqisheng
+(
+  学号 char(4) NOT NULL CONSTRAINT pk_sid PRIMARY KEY,
+  姓名 char(8) NOT NULL CONSTRAINT uk_name UNIQUE,
+  性别 char(2) NOT NULL CONSTRAINT df_sex DEFAULT '男',
+  出生日期 date NOT NULL CONSTRAINT ck_bday CHECK(出生日期 > '1988-1-1'),
+  家庭住址 varchar(50) NULL
+)
+
+USE studentsdb_dengqisheng
+INSERT INTO stu_con_dengqisheng(学号, 姓名, 出生日期) VALUES('0009', '张小东', '1989-4-6')
+INSERT INTO stu_con_dengqisheng(学号, 姓名, 性别, 出生日期) VALUES('0010', '李梅', '女', '1983-8-5')
+INSERT INTO stu_con_dengqisheng(学号, 姓名, 出生日期) VALUES('0011', '王强', '1988-9-10')
+INSERT INTO stu_con_dengqisheng(学号, 姓名, 出生日期) VALUES('0012', '王强', '1989-6-3')
+	
+ALTER TABLE stu_con_dengqisheng
+DROP CONSTRAINT pk_sid, uk_name, df_sex, ck_bday
+
+1-8
+
+USE studentsdb_dengqisheng
+ALTER TABLE grade_dengqisheng
+ADD CONSTRAINT fk_sid
+FOREIGN KEY(学号)
+REFERENCES student_info_dengqisheng(学号)
+
+EXEC sp_help grade_dengqisheng
+
+USE studentsdb_dengqisheng
+INSERT INTO grade_dengqisheng VALUES('0100', '0001', '78')
+
+USE studentsdb_dengqisheng
+INSERT INTO grade_dengqisheng VALUES('0004', '0001', '78')
+
+USE studentsdb_dengqisheng
+ALTER TABLE grade_dengqisheng
+DROP CONSTRAINT fk_sid
+
+2-1
+
+CREATE PROCEDURE letters_print
+AS
+DECLARE @count int
+SET @count = 0
+WHILE @count < 26
+BEGIN
+	PRINT CHAR(ASCII('a') + @count)
+SET @count = @count + 1
+END
+
+EXEC letters_print
+
+2-2
+
+CREATE PROCEDURE stu_info @name varchar(40)
+AS
+SELECT a.学号, 姓名, 课程编号, 分数
+FROM student_info_dengqisheng a INNER JOIN grade_dengqisheng ta
+ON a.学号 = ta.学号
+WHERE 姓名 = @name
+
+EXEC stu_info '马东'
+
+ALTER PROCEDURE stu_info @name varchar(40) = '刘卫平'
+AS
+SELECT a.学号, 姓名, 课程编号, 分数
+FROM student_info_dengqisheng a INNER JOIN grade_dengqisheng ta
+ON a.学号 = ta.学号
+WHERE 姓名 = @name
+
+EXEC stu_info
+
+
+2-3
+
+CREATE PROCEDURE stu_grade 
+AS
+SELECT a.学号, 姓名, 课程名称, 分数
+FROM student_info_dengqisheng a, curriculum_dengqisheng, grade_dengqisheng
+WHERE
+	a.学号 = '0001' AND
+	a.学号 = grade_dengqisheng.学号 AND
+	curriculum_dengqisheng.课程编号 = grade_dengqisheng.课程编号
+
+EXEC stu_grade
+
+EXEC sp_rename stu_grade, 'stu_g'
+
+2-4
+
+CREATE PROCEDURE stu_g_p @name char(8)
+AS
+SELECT a.学号, 姓名, 课程名称, 分数 AS 课程成绩
+FROM student_info_dengqisheng a, curriculum_dengqisheng, grade_dengqisheng
+WHERE
+	姓名 = @name AND
+	a.学号 = grade_dengqisheng.学号 AND
+	curriculum_dengqisheng.课程编号 = grade_dengqisheng.课程编号
+
+EXEC stu_g_p '刘卫平'
+
+EXEC sp_helptext stu_g_p
+
+2-5
+
+CREATE PROCEDURE stu_en
+WITH ENCRYPTION AS
+SELECT * FROM student_info_dengqisheng
+WHERE 性别 = '男'
+
+EXEC stu_en
+
+DROP PROCEDURE stu_en
+
+2-6
+
+CREATE PROCEDURE stu_g_r @id char(4), @average float OUTPUT
+AS
+SELECT @average = AVG(分数)
+FROM grade_dengqisheng
+WHERE 学号 = @id
+
+DECLARE @avg float
+EXEC stu_g_r '0002', @avg OUTPUT
+SELECT @avg AS 平均成绩
+
+2-7
+
+SELECT * INTO stu2_dengqisheng FROM student_info_dengqisheng
+GO
+CREATE TRIGGER stu_tr
+ON stu2_dengqisheng FOR INSERT
+AS
+DECLARE @max char(4)
+SET @max = (SELECT MAX(学号) FROM stu2_dengqisheng)
+SET @max = @max + 1
+UPDATE stu2_dengqisheng SET 学号 = REPLICATE('0', 4 - LEN(@max)) + @max
+FROM stu2_dengqisheng INNER JOIN inserted
+ON stu2_dengqisheng.学号 = inserted.学号
+
+INSERT INTO stu2_dengqisheng(学号, 姓名, 性别) VALUES('0001', '张主', '女')
+
+2-8
+
+CREATE TRIGGER insert_g_tr
+ON grade_dengqisheng
+FOR INSERT
+AS
+IF EXISTS(SELECT * FROM curriculum_dengqisheng, inserted WHERE curriculum_dengqisheng.课程编号 = inserted.课程编号)
+	PRINT '记录插入成功！'
+ELSE
+	BEGIN
+		PRINT '不存在该课程编号！记录插入失败！'
+		ROLLBACK TRANSACTION
+	END
+
+INSERT INTO grade_dengqisheng(学号, 课程编号, 分数) VALUES('0004', '0003', 76)
+
+INSERT INTO grade_dengqisheng(学号, 课程编号, 分数) VALUES('0005', '0007', 69)
+
+2-9
+
+CREATE TRIGGER del_c_tr
+ON curriculum_dengqisheng
+FOR DELETE
+AS
+PRINT '禁止删除curriculum_dengqisheng表中的记录！'
+ROLLBACK TRANSACTION
+
+2-10
+
+CREATE TRIGGER update_s_tr
+ON student_info_dengqisheng
+FOR UPDATE
+AS
+IF (SELECT 姓名 FROM inserted) != (SELECT 姓名 FROM deleted)
+	BEGIN
+		PRINT '禁止更新student_info_dengqisheng表中的“姓名”字段内容！'
+		ROLLBACK TRANSACTION
+	END
+
+2-11
+
+DROP TRIGGER update_s_tr
+
+2-12
+
+CREATE TRIGGER del_s_tr
+ON student_info_dengqisheng
+FOR DELETE
+AS
+DELETE FROM grade_dengqisheng
+WHERE 学号 IN (SELECT 学号 FROM deleted)
+
+2-13
+
+BEGIN TRANSACTION
+INSERT INTO student_info_dengqisheng(学号, 姓名) VALUES('0009', '李青')
+COMMIT TRANSACTION
+
+SET IMPLICIT_TRANSACTIONS ON
+GO
+INSERT INTO grade_dengqisheng(学号, 课程编号) VALUES('0005', '0007')
+GO
+IF ((SELECT count(*) FROM curriculum_dengqisheng WHERE 课程编号 = '0007') = 0)
+	ROLLBACK TRANSACTION
+ELSE
+	COMMIT TRANSACTION
+SET IMPLICIT_TRANSACTIONS OFF
+
+SET IMPLICIT_TRANSACTIONS ON
+GO
+INSERT INTO grade_dengqisheng(学号, 课程编号) VALUES('0005', '0007')
+GO
+IF ((SELECT count(*) FROM curriculum_dengqisheng WHERE 课程编号 = '0003') = 0)
+	ROLLBACK TRANSACTION
+ELSE
+	COMMIT TRANSACTION
+SET IMPLICIT_TRANSACTIONS OFF
+
+INSERT INTO student_info_dengqisheng(学号, 姓名) VALUES('0009', '王晶')
+GO
+
+2-14
+
+BEGIN TRANSACTION outertran
+INSERT INTO student_info_dengqisheng(学号, 姓名) VALUES('0010', '王晶')
+BEGIN TRANSACTION innertran1
+	SELECT @@TRANCOUNT
+	INSERT INTO student_info_dengqisheng(学号, 姓名) VALUES('0011', '张磊')
+		BEGIN TRANSACTION innertran2
+		SELECT @@TRANCOUNT
+		INSERT INTO student_info_dengqisheng(学号, 姓名) VALUES('0012', '陈进')
+		COMMIT TRANSACTION innertran2
+		COMMIT TRANSACTION innertran1
+		COMMIT TRANSACTION outertran
+
+2-15
+
+SELECT 学号, 姓名, 性别 INTO stu_ch_dengqisheng FROM student_info_dengqisheng
+ALTER TABLE stu_ch_dengqisheng ADD 总学分 int
+GO
+
+DECLARE @sid char(4), @cid char(4), @c_h int
+SET @sid = '0004'
+SET @cid = '0003'
+SET @c_h = (SELECT 学分 FROM curriculum_dengqisheng WHERE 课程编号 = @cid)
+
+BEGIN TRANSACTION ch_c
+INSERT INTO grade_dengqisheng(学号, 课程编号) VALUES(@sid, @cid)
+UPDATE stu_ch_dengqisheng SET 总学分 = 总学分 + @c_h WHERE 学号 = @sid
+IF ((SELECT 总学分 FROM stu_ch_dengqisheng WHERE 学号 = @sid) > 10)
+	BEGIN
+		ROLLBACK TRANSACTION ch_c
+		PRINT '总学分超过10' 
+	END
+ELSE
+	COMMIT TRANSACTION ch_c
+
+DECLARE @sid char(4), @cid char(4), @c_h int
+SET @sid = '0004'
+SET @cid = '0004'
+SET @c_h = (SELECT 学分 FROM curriculum_dengqisheng WHERE 课程编号 = @cid)
+
+BEGIN TRANSACTION ch_c
+INSERT INTO grade_dengqisheng(学号, 课程编号) VALUES(@sid, @cid)
+UPDATE stu_ch_dengqisheng SET 总学分 = 总学分 + @c_h WHERE 学号 = @sid
+IF ((SELECT 总学分 FROM stu_ch_dengqisheng WHERE 学号 = @sid) > 10)
+	BEGIN
+		ROLLBACK TRANSACTION ch_c
+		PRINT '总学分超过10' 
+	END
+ELSE
+	COMMIT TRANSACTION ch_c
+
+DECLARE @sid char(4), @cid char(4), @c_h int
+SET @sid = '0004'
+SET @cid = '0005'
+SET @c_h = (SELECT 学分 FROM curriculum_dengqisheng WHERE 课程编号 = @cid)
+
+BEGIN TRANSACTION ch_c
+INSERT INTO grade_dengqisheng(学号, 课程编号) VALUES(@sid, @cid)
+UPDATE stu_ch_dengqisheng SET 总学分 = 总学分 + @c_h WHERE 学号 = @sid
+IF ((SELECT 总学分 FROM stu_ch_dengqisheng WHERE 学号 = @sid) > 10)
+	BEGIN
+		ROLLBACK TRANSACTION ch_c
+		PRINT '总学分超过10' 
+	END
+ELSE
+	COMMIT TRANSACTION ch_c
+
+DECLARE @sid char(4), @cid char(4), @c_h int
+SET @sid = '0004'
+SET @cid = '0001'
+SET @c_h = (SELECT 学分 FROM curriculum_dengqisheng WHERE 课程编号 = @cid)
+
+BEGIN TRANSACTION ch_c
+INSERT INTO grade_dengqisheng(学号, 课程编号) VALUES(@sid, @cid)
+UPDATE stu_ch_dengqisheng SET 总学分 = 总学分 + @c_h WHERE 学号 = @sid
+IF ((SELECT 总学分 FROM stu_ch_dengqisheng WHERE 学号 = @sid) > 10)
+	BEGIN
+		ROLLBACK TRANSACTION ch_c
+		PRINT '总学分超过10' 
+	END
+ELSE
+	COMMIT TRANSACTION ch_c
+
+2-16
+
+SELECT * FROM student_info_dengqisheng with (NOLOCK)
+
+EXEC sp_lock

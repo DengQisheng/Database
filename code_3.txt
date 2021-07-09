@@ -1,0 +1,229 @@
+1
+
+DECLARE @stu_name varchar(10)
+SELECT @stu_name = 姓名
+FROM student_info_dengqisheng
+WHERE 姓名 LIKE '张%'
+SELECT @stu_name
+
+2
+
+DECLARE @grademax int, @grademin int, @gradesum int
+SELECT @grademax = MAX(分数), @grademin = MIN(分数), @gradesum = SUM(分数)
+FROM studentsdb_dengqisheng.dbo.grade_dengqisheng
+SELECT @grademax AS 最高分, @grademin AS 最低分, @gradesum AS 总分
+
+3
+
+DECLARE @rows int
+SET @rows = (SELECT COUNT(*) FROM studentsdb_dengqisheng.dbo.grade_dengqisheng)
+SELECT @rows
+
+4
+
+DECLARE @intCID int, @intErrorCode int
+INSERT INTO studentsdb_dengqisheng.dbo.curriculum_dengqisheng(课程编号, 课程名称, 学分)
+	VALUES('0006', 'VB程序设计', 2)
+SELECT @intCId = @@identity, @intErrorCode = @@error
+SELECT @intCId, @intErrorCode
+
+5
+
+DECLARE @men int
+SELECT @men = COUNT(性别)
+FROM studentsdb_dengqisheng.dbo.student_info_dengqisheng
+WHERE 性别 = '男'
+SELECT @men AS 男
+
+DECLARE @women int
+SELECT @women = COUNT(性别)
+FROM studentsdb_dengqisheng.dbo.student_info_dengqisheng
+WHERE 性别 = '女'
+SELECT @women AS 女
+
+/*
+SELECT COUNT(性别)
+FROM studentsdb_dengqisheng.dbo.student_info_dengqisheng
+GROUP BY 性别
+*/
+
+6
+
+DECLARE @grademax int, @grademin int, @gradesum int
+SELECT @grademax = MAX(分数), @grademin = MIN(分数), @gradesum = AVG(分数)
+FROM studentsdb_dengqisheng.dbo.grade_dengqisheng
+WHERE 课程编号 = '0005'
+SELECT @grademax AS 最高分, @grademin AS 最低分, @gradesum AS 平均分
+
+7
+
+DECLARE @student datetime
+SET @student = GETDATE()
+SELECT 姓名, YEAR(@student) - YEAR(出生日期) AS 年龄
+FROM studentsdb_dengqisheng.dbo.student_info_dengqisheng
+
+8
+
+DECLARE @a int, @b int
+SET @a = 168
+SET @b = 73
+SELECT @a & @b, @a | @b, @a ^ @b
+
+9
+
+DECLARE @stu_id char(4)
+SET @stu_id = '0001'
+IF
+(
+(SELECT AVG(分数)
+FROM studentsdb_dengqisheng.dbo.grade_dengqisheng
+WHERE 学号 = @stu_id) >= 60
+)
+	PRINT '你的成绩及格了，恭喜你！！'
+ELSE
+	PRINT '你的成绩不及格'
+
+10
+
+DECLARE @counter int
+SET @counter = 1
+WHILE @counter < 10
+BEGIN
+	SELECT '@counter的值现在为:' + CONVERT(char(2), @counter)
+	SET @counter = @counter + 1
+END
+
+11
+
+SELECT 学号, 课程编号, 分数, 等级 =
+CASE
+WHEN 分数 >= 90 THEN 'A'
+WHEN 分数 >= 80 AND 分数 < 90 THEN 'B'
+WHEN 分数 >= 70 AND 分数 < 80 THEN 'C'
+WHEN 分数 >= 60 AND 分数 < 70 THEN 'D'
+ELSE 'E'
+END
+FROM studentsdb_dengqisheng.dbo.grade_dengqisheng
+
+12
+
+WHILE (SELECT AVG(分数) FROM studentsdb_dengqisheng.dbo.grade_dengqisheng) < 80
+BEGIN
+IF (SELECT MAX(分数) FROM studentsdb_dengqisheng.dbo.grade_dengqisheng) > 95
+	BREAK
+ELSE
+	UPDATE studentsdb_dengqisheng.dbo.grade_dengqisheng
+	SET 分数 = 分数 * 1.05
+END
+SELECT AVG(分数) AS 平均分 FROM studentsdb_dengqisheng.dbo.grade_dengqisheng
+
+13
+
+DECLARE @n int, @i int
+SET @n = 0
+SET @i = 1
+WHILE @i <= 20
+BEGIN
+	SET @n = @n + @i
+	SET @i = @i + 1
+END
+SELECT @n AS 结果
+
+14
+
+PRINT '1~100之间的完全平方数：'
+DECLARE @s int
+SET @s = 1
+WHILE @s <= 10
+BEGIN
+	PRINT CONVERT(char(3), POWER(@s, 2))
+	SET @s = @s + 1
+END
+
+15
+
+PRINT '1~100之间的所有素数:'
+DECLARE @n int, @i int, @flag int, @out varchar(120)
+SET @n = 2
+SET @out = ''
+WHILE @n <= 100
+BEGIN
+	SET @i = 2
+	SET @flag = 1
+	WHILE @i <= FLOOR(SQRT(@n))
+	BEGIN
+		IF @n % @i = 0
+		BEGIN
+			SET @flag = 0
+			BREAK
+		END
+		ELSE
+			SET @i = @i + 1
+	END
+	IF @flag = 1
+		SET @out = @out + CONVERT(char(4), @n)
+	SET @n = @n + 1
+END
+PRINT CONVERT(varchar(120), @out)
+
+16
+
+--(1)--
+DECLARE stu_cursor CURSOR
+GLOBAL SCROLL DYNAMIC
+FOR
+SELECT * FROM studentsdb_dengqisheng.dbo.student_info_dengqisheng
+WHERE 性别 = '男'
+FOR UPDATE
+--(2)--
+OPEN stu_cursor
+--(3)--
+FETCH NEXT FROM stu_cursor
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	FETCH NEXT FROM stu_cursor
+END
+--(4)--
+CLOSE stu_cursor
+
+17-1
+
+--(1)--
+OPEN stu_cursor
+--(2)--
+UPDATE studentsdb_dengqisheng.dbo.student_info_dengqisheng
+SET 出生日期 = DATEADD(YEAR, 1, 出生日期)
+WHERE 姓名 LIKE '马%' AND 性别 = '男'
+--(3)--
+CLOSE stu_cursor
+
+17-2
+
+--(1)--
+OPEN stu_cursor
+
+--(2)--
+FETCH RELATIVE 3 FROM stu_cursor
+UPDATE studentsdb_dengqisheng.dbo.student_info_dengqisheng
+SET 出生日期 = DATEADD(YEAR, 1, 出生日期)
+WHERE CURRENT OF stu_cursor
+SELECT * FROM studentsdb_dengqisheng.dbo.student_info_dengqisheng
+WHERE 姓名 LIKE '马%' AND 性别 = '男'
+
+--(3)--
+CLOSE stu_cursor
+
+18
+
+DECLARE @stu_c CURSOR
+SET @stu_c = stu_cursor
+OPEN @stu_c
+SELECT * FROM studentsdb_dengqisheng.dbo.student_info_dengqisheng
+WHERE DATEPART(MONTH, 出生日期) >= 6 AND DATEPART(MONTH, 出生日期) <= 9
+CLOSE @stu_c
+
+19
+
+DECLARE @report CURSOR
+EXEC studentsdb_dengqisheng.dbo.sp_cursor_list @cursor_return = @report OUTPUT, @cursor_scope = 2
+FETCH NEXT FROM @report

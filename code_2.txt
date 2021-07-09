@@ -1,0 +1,252 @@
+1-1-1
+CREATE DATABASE Book_Reader_DB_dengqisheng
+ON
+( NAME = Book_Reader_DB_dengqisheng_dat,
+  FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\DATA\Book_Reader_DB_dengqisheng.mdf',
+  SIZE = 5,
+  MAXSIZE = 20,
+  FILEGROWTH = 1)
+
+1-1-2
+USE Book_Reader_DB_dengqisheng
+
+CREATE TABLE book_dengqisheng
+( bookID char(4) NOT NULL,
+  title nvarchar(20) NOT NULL,
+  category nchar(5),
+  press nchar(10),
+  author nchar(4),
+  price real,
+  quantity int,
+  purchaseDate date,
+  remark text)
+CREATE TABLE reader_dengqisheng
+( readerID char(4) NOT NULL,
+  name nchar(4) NOT NULL,
+  company nvarchar(5),
+  sex bit NOT NULL,
+  phone char(10))
+CREATE TABLE borrow_dengqisheng
+( bookID char(4) NOT NULL,
+  readerID char(4) NOT NULL,
+  borrowDate date NOT NULL,
+  dueDate date NOT NULL)
+
+ALTER TABLE book_dengqisheng ADD CONSTRAINT PK_book_dengqisheng PRIMARY KEY(bookID)
+ALTER TABLE reader_dengqisheng ADD CONSTRAINT PK_reader_dengqisheng PRIMARY KEY(readerID)
+ALTER TABLE borrow_dengqisheng ADD CONSTRAINT PK_borrow_dengqisheng PRIMARY KEY(bookID, readerID)
+ALTER TABLE borrow_dengqisheng ADD CONSTRAINT FK_borrow_dengqisheng_book_dengqisheng FOREIGN KEY(bookID) REFERENCES book_dengqisheng(bookID)
+ALTER TABLE borrow_dengqisheng ADD CONSTRAINT FK_borrow_dengqisheng_reader_dengqisheng FOREIGN KEY(readerID) REFERENCES reader_dengqisheng(readerID)
+
+1-1-4
+INSERT Book_Reader_DB_dengqisheng.dbo.book_dengqisheng
+	VALUES('1', '数据结构', '计算机', '清华大学出版社', '严蔚敏', '15', '10', '1999-05-08', ''),
+		  ('2', '数据库系统实验指导', '计算机', '清华大学出版社', '单建魁', '15', '30', '2000-03-01', ''),
+		  ('3', '环境化学', '环境', '南京大学出版社', '王小容', '32', '20', '2000-06-09', ''),
+		  ('4', '环境学导论', '环境', '清华大学出版社', '何强', '35', '20', '2000-06-12', ''),
+		  ('5', '算法与数据结构', '计算机', '电子工业出版社', '傅清祥', '36.7', '10', '2000-07-15', ''),
+		  ('6', '人工智能及其应用', '计算机', '清华大学出版社', '蔡自兴', '28', '10', '2000-09-17', ''),
+		  ('7', '数据通信与计算机网络', '计算机', '高等教育出版社', '高传善', '35', '10', '1999-07-08', ''),
+		  ('8', '软件工程技术概论', '计算机', '科学出版社', '朱三元', '15', '30', '2001-03-01', ''),
+		  ('9', '环境化学', '环境', '高等教育出版社', '戴树桂', '32', '20', '2002-06-09', ''),
+		  ('10', '环境学概论', '环境', '高等教育出版社', '林肇信', '38', '20', '2000-05-12', ''),
+		  ('11', '图论及其应用', '计算机', '东南大学出版社', '卜月华', '36.7', '10', '2000-07-10', ''),
+		  ('12', '环境工程微生物学', '环境', '高等教育出版社', '周群英', '18', '20', '2000-03-12', ''),
+		  ('13', '操作系统', '计算机', '中国人民大学出版社', '谭耀铭', '38', '30', '1999-12-25', '')
+		  
+INSERT Book_Reader_DB_dengqisheng.dbo.reader_dengqisheng
+	VALUES('1', '张红', '电气学院', '1', '1032324565'),
+		  ('2', '杨小鹏', '信息学院', '0', '1032333667'),
+		  ('3', '王俊', '信息学院', '0', '1043546789'),
+		  ('4', '刘建', '建筑学院', '0', '1023242526'),
+		  ('5', '张珊', '电气学院', '1', '1032324566'),
+		  ('6', '李红', '信息学院', '0', '1032333669'),
+		  ('7', '刘则', '信息学院', '0', '1043546779'),
+		  ('8', '王荣', '建筑学院', '0', '1023242527')
+
+INSERT Book_Reader_DB_dengqisheng.dbo.borrow_dengqisheng
+	VALUES('3', '1', '2001-07-10', '2001-08-07'),
+		  ('4', '1', '2001-07-02', '2001-07-22'),
+		  ('5', '1', '2001-09-15', '2001-09-15'),
+		  ('1', '2', '2001-09-02', '2001-10-01'),
+		  ('2', '2', '2001-09-12', '2001-10-11'),
+		  ('6', '2', '2002-01-12', '2002-02-01'),
+		  ('13', '2', '2001-06-08', '2001-07-08'),
+		  ('2', '3', '2001-10-15', '2001-11-01'),
+		  ('6', '3', '2002-02-10', '2002-02-20'),
+		  ('3', '4', '2001-08-17', '2001-08-29'),
+		  ('4', '4', '2001-07-25', '2001-08-15'),
+		  ('7', '5', '2001-09-02', '2001-10-01'),
+		  ('8', '5', '2001-09-12', '2001-10-11'),
+		  ('9', '5', '2002-07-12', '2002-08-01'),
+		  ('10', '6', '2001-07-10', '2001-08-07'),
+		  ('11', '6', '2001-07-02', '2001-07-22'),
+		  ('12', '6', '2001-09-15', '2001-09-15'),
+		  ('7', '7', '2001-10-15', '2001-11-01'),
+		  ('8', '7', '2002-02-10', '2002-02-20'),
+		  ('11', '8', '2001-08-17', '2001-08-29'),
+		  ('12', '8', '2001-10-25', '2001-11-15'),
+		  ('13', '8', '2002-04-03', '2002-05-04')
+
+1-2-1
+USE Book_Reader_DB_dengqisheng
+
+SELECT DISTINCT reader_dengqisheng.readerID, name, company 
+FROM book_dengqisheng, reader_dengqisheng, borrow_dengqisheng
+WHERE borrow_dengqisheng.bookID = book_dengqisheng.bookID and 
+      borrow_dengqisheng.readerID = reader_dengqisheng.readerID and 
+      category = '环境'
+
+1-2-2
+USE Book_Reader_DB_dengqisheng
+
+SELECT DISTINCT reader_dengqisheng.readerID, name, company 
+FROM book_dengqisheng, reader_dengqisheng, borrow_dengqisheng
+WHERE borrow_dengqisheng.readerID = reader_dengqisheng.readerID
+
+1-2-3
+USE Book_Reader_DB_dengqisheng
+
+SELECT DISTINCT book_dengqisheng.bookID, title
+FROM book_dengqisheng, reader_dengqisheng, borrow_dengqisheng
+WHERE borrow_dengqisheng.readerID = reader_dengqisheng.readerID and 
+      borrow_dengqisheng.bookID = book_dengqisheng.bookID and 
+      name = '李红' and
+      borrowDate < '2001-07-20' and
+      dueDate > '2001-07-20'
+
+1-2-4
+USE Book_Reader_DB_dengqisheng
+
+SELECT DISTINCT name FROM reader_dengqisheng
+WHERE reader_dengqisheng.readerID not in (SELECT DISTINCT borrow_dengqisheng.bookID FROM borrow_dengqisheng)
+
+1-2-5
+USE Book_Reader_DB_dengqisheng
+
+SELECT DISTINCT ABS(book_dengqisheng.bookID) AS bookID, title FROM book_dengqisheng
+WHERE book_dengqisheng.bookID in
+( SELECT DISTINCT borrow_dengqisheng.bookID
+  FROM borrow_dengqisheng
+  GROUP BY borrow_dengqisheng.bookID
+  HAVING COUNT(borrow_dengqisheng.bookID) >= 2)
+
+1-2-6
+USE Book_Reader_DB_dengqisheng
+
+SELECT DISTINCT reader_dengqisheng.readerID, name
+FROM reader_dengqisheng
+WHERE reader_dengqisheng.readerID in
+( SELECT DISTINCT borrow_dengqisheng.readerID
+  FROM borrow_dengqisheng
+  WHERE borrowDate < '2001-07-20' and dueDate > '2001-07-20'
+  GROUP BY borrow_dengqisheng.readerID
+  HAVING COUNT(borrow_dengqisheng.readerID) >= 2)
+
+2-1-1
+USE Book_Reader_DB_dengqisheng
+
+SELECT * FROM book_dengqisheng WHERE category = '计算机'
+INTERSECT
+SELECT * FROM book_dengqisheng WHERE press = '高等教育出版社'
+
+2-1-2
+USE Book_Reader_DB_dengqisheng
+
+SELECT title FROM book_dengqisheng WHERE press = '清华大学出版社'
+EXCEPT
+SELECT title FROM book_dengqisheng WHERE press = '高等教育出版社'
+
+2-1-3
+USE Book_Reader_DB_dengqisheng
+
+SELECT * FROM book_dengqisheng WHERE press = '清华大学出版社'
+INTERSECT
+SELECT * FROM book_dengqisheng WHERE category = '计算机'
+
+2-1-4
+USE Book_Reader_DB_dengqisheng
+
+SELECT borrow_dengqisheng.readerID FROM borrow_dengqisheng, reader_dengqisheng, book_dengqisheng
+WHERE press = '清华大学出版社' and title = '数据结构' and
+	  borrow_dengqisheng.readerID = reader_dengqisheng.readerID and
+	  borrow_dengqisheng.bookID = book_dengqisheng.bookID
+UNION
+SELECT borrow_dengqisheng.readerID FROM borrow_dengqisheng, reader_dengqisheng, book_dengqisheng
+WHERE press = '中国人民大学出版社' and title = '操作系统' and
+	  borrow_dengqisheng.readerID = reader_dengqisheng.readerID and
+	  borrow_dengqisheng.bookID = book_dengqisheng.bookID
+
+2-2-1
+USE Book_Reader_DB_dengqisheng
+
+SELECT category FROM book_dengqisheng
+GROUP BY category
+HAVING MAX(price) <= AVG(price) * 3
+
+2-2-2
+USE Book_Reader_DB_dengqisheng
+
+SELECT category, CAST(AVG(price) AS DECIMAL(20, 1)) AS averagePrice FROM book_dengqisheng
+WHERE press = '清华大学出版社'
+GROUP BY category
+
+2-2-3
+USE Book_Reader_DB_dengqisheng
+
+SELECT ABS(bookID) AS bookID, title
+FROM book_dengqisheng 
+WHERE category = '计算机'
+ORDER BY bookID ASC
+
+SELECT COUNT(*) AS quantity, CAST(SUM(price) AS DECIMAL(20, 1)) AS totalPrice
+FROM book_dengqisheng 
+WHERE category = '计算机'
+
+2-2-4
+USE Book_Reader_DB_dengqisheng
+
+SELECT ABS(bookID) AS bookID, title, CAST(price AS DECIMAL(20, 1)) AS price
+FROM book_dengqisheng 
+WHERE category = '环境'
+ORDER BY bookID ASC
+
+SELECT press, CAST(SUM(price) AS DECIMAL(20, 1)) AS totalPrice_category
+FROM book_dengqisheng
+WHERE category = '环境'
+GROUP BY press
+
+SELECT COUNT(*) AS quantity, CAST(SUM(price) AS DECIMAL(20, 1)) AS totalPrice
+FROM book_dengqisheng 
+WHERE category = '环境'
+
+2-2-5
+USE Book_Reader_DB_dengqisheng
+
+SELECT TOP 2 press, SUM(quantity) AS quantity
+FROM book_dengqisheng
+GROUP BY press
+ORDER BY quantity DESC
+
+2-2-6
+USE Book_Reader_DB_dengqisheng
+
+SELECT SUM(quantity) AS totalQuantity_after2000
+FROM book_dengqisheng
+WHERE purchaseDate > '2000-01-01'
+
+2-2-7
+USE Book_Reader_DB_dengqisheng
+
+SELECT category, COUNT(borrow_dengqisheng.bookID) AS borrowQuantity
+FROM book_dengqisheng INNER JOIN borrow_dengqisheng
+ON book_dengqisheng.bookID = borrow_dengqisheng.bookID
+GROUP BY category
+
+2-2-8
+USE Book_Reader_DB_dengqisheng
+
+SELECT ABS(borrow_dengqisheng.bookID) AS bookID, COUNT(borrow_dengqisheng.readerID) AS quantity_per_book
+FROM borrow_dengqisheng
+GROUP BY borrow_dengqisheng.bookID
+ORDER BY bookID ASC
